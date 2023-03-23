@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.9.14-management-alpine
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # management UI
+    volumes:
+      - rabbitmq_data:/home/data/rabbitmq
+      - rabbitmq_logs:/home/log/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypassword
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_logs:
