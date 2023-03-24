@@ -10,13 +10,17 @@
                  [io.pedestal/pedestal.jetty "0.5.11-beta-1"]
                  [io.pedestal/pedestal.route "0.5.11-beta-1"]
                  [ring/ring-json "0.5.1"]
-                 [com.novemberain/langohr "5.1.0"]]
+                 [com.novemberain/langohr "5.1.0"]
+                 [org.clojure/tools.logging "1.1.0"]
+                 [org.clojure/tools.cli "1.0.214"]
+                 [ch.qos.logback/logback-classic "1.4.6"]]
   :main ^:skip-aot rabbit.server
   :repl-options {:init-ns rabbit.user}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
              :dev {:source-paths ["dev/src"]
                    :resource-paths ["dev/resources"]
-                   :dependencies [[com.stuartsierra/component.repl "1.0.0"]]}}
+                   :dependencies [[com.stuartsierra/component.repl "1.0.0"]
+                                  [org.clojure/tools.trace "0.7.11"]]}}
   ;; lein with-profile dev repl
   :uberjar-name "rabbit.jar")

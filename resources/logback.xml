@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+   <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ALL-FILE">
+      <file>logs/all.log</file>
+      <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+         <fileNamePattern>logs/all_%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+         <maxFileSize>80MB</maxFileSize>
+         <totalSizeCap>600MB</totalSizeCap>
+         <maxHistory>7</maxHistory>
+      </rollingPolicy>
+      <encoder>
+         <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+      </encoder>
+   </appender>
+  
+   <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+      <encoder>
+         <pattern>%msg%n</pattern>
+      </encoder>
+   </appender>
+   <root level="info">
+      <appender-ref ref="ALL-FILE" />
+   </root>
+   <logger level="info" name="doitwise.ih.controller">
+      <appender-ref ref="CONTROLLER-FILE" />
+   </logger>
+   <logger level="off" name="io.pedestal.http">
+      <appender-ref ref="ALL-FILE" />
+   </logger>
+   <logger level="info" name="errorhandling-log">
+      <appender-ref ref="ALL-FILE" />
+   </logger>
+   <logger label="Audit" level="info" name="audit-log">
+      <appender-ref ref="AUDIT-FILE" />
+   </logger>
+   <appender class="ch.qos.logback.classic.sift.SiftingAppender" name="FILE-TROUBLESHOOT">
+      <discriminator>
+         <key>action</key>
+         <defaultValue>unknown</defaultValue>
+      </discriminator>
+      <sift>
+         <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE-${action}">
+            <file>logs/action-${action}.log</file>
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+               <Pattern>%d %mdc [%thread] %level %logger{35} - %msg%n</Pattern>
+            </encoder>
+            <prudent>true</prudent>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+               <fileNamePattern>logs/action-${action}_%d{yyyy-MM-dd}.log</fileNamePattern>
+               <maxHistory>2</maxHistory>
+            </rollingPolicy>
+         </appender>
+      </sift>
+   </appender>
+  
+</configuration>
