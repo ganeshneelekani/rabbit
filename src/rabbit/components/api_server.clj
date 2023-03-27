@@ -81,7 +81,6 @@
         (update-in [:rabbit-mq-config :conn] (constantly nil))
         (update-in [:rabbit-mq-config :channel] (constantly nil)))))
 
-
 (defn rabbit-mq-service
   [config]
   (map->Rabbit-mq {:rabbit-mq-config config}))

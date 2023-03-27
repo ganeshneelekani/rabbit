@@ -31,3 +31,36 @@
   (let [config c/server-config]
     (configure-logger)
     (component/start (create-system config))))
+
+
+(comment
+
+  (require '[langohr.core    :as rmq])
+  (require '[langohr.channel :as lch])
+  (require '[langohr.queue   :as lq])
+
+
+  (let [conn  (rmq/connect c/rabbit-mq-config)
+        ch    (lch/open conn)
+        queue (lq/declare ch "" {:exclusive true})]
+    queue)
+
+
+  (require '[langohr.core      :as rmq])
+  (require '[langohr.channel   :as lch])
+  (require '[langohr.basic     :as lb])
+  (require '[langohr.consumers :as lcons])
+
+
+  (let [conn     (rmq/connect c/rabbit-mq-config)
+        ch       (lch/open conn)
+        queue (lq/declare ch "" {:exclusive true})
+        consumer (lcons/create-default ch {:handle-delivery-fn   (fn [ch metadata ^bytes payload]
+                                                                   (println "Received a message: " (String. payload)))
+                                           :handle-consume-ok-fn (fn [consumer-tag]
+                                                                   (println "Consumer registered"))})]
+    (lb/consume ch queue consumer)))
+
+
+
+
