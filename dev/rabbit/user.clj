@@ -48,7 +48,7 @@
 
   (pt/response-for
    (-> cr/system :api-server :service ::http/service-fn)
-   :get "/test"
+   :get "/consume"
    :headers {}
     ;; a1995316-80ea-4a98-939d-7c6295e4bb46)
    )

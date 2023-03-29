@@ -4,7 +4,8 @@
             [langohr.channel   :as lch]
             [io.pedestal.http :as http]
             [io.pedestal.interceptor :as interceptor]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [io.pedestal.http.route :as route]))
 
 (defn dev?
   [service-map]
