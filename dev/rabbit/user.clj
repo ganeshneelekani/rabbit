@@ -7,7 +7,8 @@
             [com.stuartsierra.component.repl :as cr]
             [io.pedestal.test :as pt]
             [cognitect.transit :as transit]
-            [clojure.pprint :as p])
+            [clojure.pprint :as p]
+            [clojure.pprint :as pprint])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
 
@@ -68,9 +69,33 @@
     ;; a1995316-80ea-4a98-939d-7c6295e4bb46).
    :body (transit-write {:ch "channel"
                          :qname "true"
+                         :auto-ack "true"}))
+
+
+
+  (restart-dev)
+
+  (pt/response-for
+   (-> cr/system :api-server :service ::http/service-fn)
+   :post "/publish"
+   :headers {"Content-Type" "application/transit+json"}
+    ;; a1995316-80ea-4a98-939d-7c6295e4bb46).
+   :body (transit-write {:ch "channel"
+                         :qname "true"
                         ;;  :f (fn [_]
                         ;;       identity)
                          :auto-ack true}))
+
+  (clojure.pprint/pprint (-> cr/system))
+
+  (pt/response-for
+   (-> cr/system :api-server :service ::http/service-fn)
+   :post "/declare"
+   :headers {"Content-Type" "application/transit+json"}
+    ;; a1995316-80ea-4a98-939d-7c6295e4bb46).
+   :body (transit-write {:ename "exchange1"
+                         :topic "topic1"}))
+
 
   (-> cr/system :api-server :service ::http/service-fn)
 

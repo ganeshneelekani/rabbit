@@ -5,7 +5,8 @@
             [io.pedestal.http :as http]
             [io.pedestal.interceptor :as interceptor]
             [com.stuartsierra.component :as component]
-            [io.pedestal.http.route :as route]))
+            [io.pedestal.http.route :as route]
+            [clojure.pprint :as pprint]))
 
 (defn dev?
   [service-map]
@@ -23,7 +24,6 @@
   (interceptor/interceptor
    {:name ::inject-system
     :enter (fn [ctx]
-             (println "----WW----------" (get ctx :request))
              (update-in ctx [:request] merge system))}))
 
 (defn merge-interceptor
@@ -74,14 +74,12 @@
     (let [conn  (rmq/connect rabbit-mq-config)
           ch    (lch/open conn)]
       (-> component
-          (update-in [:rabbit-mq-config :conn] (constantly conn))
-          (update-in [:rabbit-mq-config :channel] (constantly ch)))))
+          (update-in [:rabbit-mq-config :conn] (constantly conn)))))
 
   (stop [component]
     (println ";; Stopping Rabbit MQ connection")
     (-> component
-        (update-in [:rabbit-mq-config :conn] (constantly nil))
-        (update-in [:rabbit-mq-config :channel] (constantly nil)))))
+        (update-in [:rabbit-mq-config :conn] (constantly nil)))))
 
 (defn rabbit-mq-service
   [config]

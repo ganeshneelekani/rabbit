@@ -104,9 +104,11 @@
                                (assoc-in ctx [:request :accept] "application/edn"))}))
 
 
+(def common-interceptor1
+  [http/transit-body (bp/body-params) http-error-handler coerce-body def-content-type url-decode-path-params content-neg-intc csp-interceptor])
+
 (def common-interceptor
-  [http/transit-body http-error-handler coerce-body def-content-type url-decode-path-params content-neg-intc
-   (bp/body-params) csp-interceptor])
+  [http/transit-body (bp/body-params)])
 
 
 (defn web-interceptors

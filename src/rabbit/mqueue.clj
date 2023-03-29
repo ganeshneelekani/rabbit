@@ -6,15 +6,6 @@
             [langohr.consumers :as lc]
             [langohr.basic     :as lb]))
 
-(def ^{:const true}
-  DEFAULT-QUEUE "public-queue")
-
-(def ^{:const true}
-  DEFAULT-EXCHANGE-NAME "")
-
-(def ^{:const true}
-  DEFAULT-ROUTING-KEY "")
-
 (defn message-handler [f qname ch metadata ^bytes payload]
   {:qname qname
    :channel ch
@@ -34,15 +25,23 @@
 
 (defn declare-queue
   "Declare a queue"
-  [ch ename exclusive auto-delete]
-  (lq/declare ch (or ename DEFAULT-EXCHANGE-NAME) {:exclusive exclusive
-                                                   :auto-delete auto-delete}))
+  [ch ename topic & {:keys [durable auto-delete exclusive]
+                     :or   {durable     false
+                            auto-delete true
+                            exclusive   false}}]
+
+  (println "---k1----" ch)
+
+
+  (le/declare ch "as" "topic" {:durable false :auto-delete true})
+  #_(le/declare ch ename topic
+                {:durable     durable
+                 :auto-delete auto-delete
+                 :exclusive   exclusive}))
 
 (defn publish-message
   "Publish the message"
   [ch ename r-key payload type]
-  (lb/publish ch
-              ename
-              (or r-key DEFAULT-ROUTING-KEY)
+  (lb/publish ch ename r-key
               (or payload "Sample data")
               {:content-type type}))
