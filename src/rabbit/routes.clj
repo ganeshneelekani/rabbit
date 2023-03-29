@@ -1,12 +1,13 @@
 (ns rabbit.routes
-  (:require [io.pedestal.http.route :as route]
-            [clojure.pprint :as pprint]
+  (:require [clojure.pprint :as pprint]
+            [clojure.set :as set]
             [clojure.tools.logging :as log]
-            [clojure.set :as set]))
+            [io.pedestal.http.route :as route]
+            [rabbit.interceprors :as inter]))
 
 
 (defn respond-rabbit-mq [request]
-  ;;(clojure.pprint/pprint (get-in request [:system/rabbit-mq :rabbit-mq-config :conn]))
+  (clojure.pprint/pprint (get-in request [:system/rabbit-mq :rabbit-mq-config :conn]))
   {:status 200
    :body "Hello, Rabbit MQ!"})
 
@@ -18,8 +19,9 @@
 (def producer-route
   #{["/publish" :post respond-rabbit-mq :route-name :publish]})
 
+;; (http/web-interceptors inter/consumer)
 (def consumer-route
-  #{["/consume" :get respond-rabbit-mq :route-name :consume]})
+  #{["/consume" :post inter/consumer :route-name :consume]})
 
 (def no-routes
   {:not-found {:handler not-found-handler}})

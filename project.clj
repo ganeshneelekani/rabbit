@@ -13,7 +13,8 @@
                  [com.novemberain/langohr "5.1.0"]
                  [org.clojure/tools.logging "1.1.0"]
                  [org.clojure/tools.cli "1.0.214"]
-                 [ch.qos.logback/logback-classic "1.4.6"]]
+                 [ch.qos.logback/logback-classic "1.4.6"]
+                 [org.clojure/data.json "2.4.0"]]
   :main ^:skip-aot rabbit.server
   :repl-options {:init-ns rabbit.user}
   :target-path "target/%s"

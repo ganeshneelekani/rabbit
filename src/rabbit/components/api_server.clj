@@ -23,6 +23,7 @@
   (interceptor/interceptor
    {:name ::inject-system
     :enter (fn [ctx]
+             (println "----WW----------" (get ctx :request))
              (update-in ctx [:request] merge system))}))
 
 (defn merge-interceptor
