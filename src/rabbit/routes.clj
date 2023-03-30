@@ -18,7 +18,7 @@
 ;;declare-queue
 
 (def producer-route
-  #{["/publish" :post respond-rabbit-mq :route-name :publish]
+  #{["/publish" :post inter/publisher-interceptor :route-name :publish]
     ["/declare" :post inter/declare-queue-interceptor :route-name :declare-queue]})
 
 ;; (http/web-interceptors in.zter/consumer)

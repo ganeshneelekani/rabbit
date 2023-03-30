@@ -19,22 +19,30 @@
 (def ^{:const true}
   DEFAULT-TOPIC "topic")
 
-(defn message-handler [f qname ch metadata ^bytes payload]
+(def ^{:const true}
+  DEFAULT-PAYLOAD "Sample payload")
+
+(defn message-handler [qname ch metadata ^bytes payload]
   {:qname qname
    :channel ch
    :metadata metadata
-   :payload (f (String. payload))})
-
-(defn start-consumer
-  "Starts a consumer in a separate thread"
-  [ch qname f auto-ack]
-  (.start (Thread. (fn []
-                     (lc/subscribe ch qname (partial message-handler f qname) {:auto-ack auto-ack})))))
+   :payload (String. payload)})
 
 (defn bind-channel
   "Binds channel to queue and exchange"
-  [ch q ename]
-  (lq/bind ch q ename))
+  [ch q ename topic-name]
+  (lq/bind ch q ename {:routing-key topic-name}))
+
+(defn start-consumer
+  "Starts a consumer in a separate thread"
+  [conn topic ename qname & {:keys [exclusive auto-delete auto-ack]
+                             :or   {exclusive     false
+                                    auto-delete true
+                                    auto-ack true}}]
+  (let [ch (lch/open conn)]
+    (bind-channel ch qname ename topic)
+    (.start (Thread. (fn []
+                       (lc/subscribe ch qname (partial message-handler qname) {:auto-ack auto-ack}))))))
 
 (defn declare-queue
   "Declare a queue"
@@ -51,7 +59,12 @@
 
 (defn publish-message
   "Publish the message"
-  [ch ename r-key payload type]
-  (lb/publish ch ename r-key
-              (or payload "Sample data")
-              {:content-type type}))
+  [conn ename r-key payload & {:keys [content-type type]
+                               :or   {content-type "text/plain"
+                                      type   "type"}}]
+  (let [ch (lch/open conn)]
+    (println "----ch------" ch)
+    (println "----1------" ename "  " r-key "   " payload)
+    (lb/publish ch ename r-key payload {:content-type content-type
+                                        :type type})
+    (lch/close ch)))

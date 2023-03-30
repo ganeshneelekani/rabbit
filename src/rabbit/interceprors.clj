@@ -25,16 +25,34 @@
 (def consumer-interceptor
   {:name ::consumer-interceptor
    :enter (fn [{:keys [request] :as ctx}]
-            (let [channel (get-in request [:system/rabbit-mq :rabbit-mq-config :channel])]
-              (let [{:keys [qname auto-ack]} (:transit-params request)]
-                (assoc ctx :response (rr/response {:result (str "  " channel)})))))})
+            (let [conn (get-in request [:system/rabbit-mq :rabbit-mq-config :conn])
+                  {:keys [topic qname ename]} (:transit-params request)
+                  ename' (or ename mqueue/DEFAULT-EXCHANGE-NAME)
+                  topic' (or topic mqueue/DEFAULT-TOPIC)
+                  qname' (or qname mqueue/DEFAULT-QUEUE)]
+              (try
+                (mqueue/start-consumer conn topic' ename' qname')
+                (assoc ctx :response (rr/response  "Message published"))
+                (catch Exception e
+                  (println e)
+                  (assoc ctx :response {:status 500
+                                        :body (format "error in publishing message for the topic  %s qname %s", topic',qname')})))))})
 
-(def producer-interceptor
-  {:name ::producer-interceptor
+(def publisher-interceptor
+  {:name ::publisher-interceptor
    :enter (fn [{:keys [request] :as ctx}]
-            (let [channel (get-in request [:system/rabbit-mq :rabbit-mq-config :channel])
-                  {:keys [qname auto-ack]} (:transit-params request)]
-              (assoc ctx :response (rr/created {:result (str "  " channel)}))))})
+            (let [conn (get-in request [:system/rabbit-mq :rabbit-mq-config :conn])
+                  {:keys [ename r-key payload]} (:transit-params request)
+                  ename' (or ename mqueue/DEFAULT-EXCHANGE-NAME)
+                  r-key' (or r-key mqueue/DEFAULT-ROUTING-KEY)
+                  payload' (or payload mqueue/DEFAULT-PAYLOAD)]
+              (try
+                (mqueue/publish-message conn ename' r-key' payload')
+                (assoc ctx :response (rr/response  "Message published"))
+                (catch Exception e
+                  (println e)
+                  (assoc ctx :response {:status 500
+                                        :body (format "error in publishing message for the exhange name %s routing key %s", ename',r-key')})))))})
 
 (def declare-queue-interceptor
   {:name ::declare-queue
@@ -45,7 +63,7 @@
                   topic' (or topic mqueue/DEFAULT-TOPIC)]
               (try
                 (mqueue/declare-queue conn ename' topic')
-                (assoc ctx :response (rr/created  "Message queue is created"))
+                (assoc ctx :response (rr/created nil "Message queue is created"))
                 (catch Exception e
                   (assoc ctx :response {:status 500
                                         :body (format "error in creating queue for the exhange %s topic %s", topic',ename')})))))})
