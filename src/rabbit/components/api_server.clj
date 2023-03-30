@@ -71,8 +71,7 @@
 
   (start [component]
     (println ";; Starting Rabbit MQ connection ")
-    (let [conn  (rmq/connect rabbit-mq-config)
-          ch    (lch/open conn)]
+    (let [conn  (rmq/connect rabbit-mq-config)]
       (-> component
           (update-in [:rabbit-mq-config :conn] (constantly conn)))))
 

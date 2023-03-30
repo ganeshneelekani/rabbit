@@ -8,7 +8,8 @@
             [io.pedestal.test :as pt]
             [cognitect.transit :as transit]
             [clojure.pprint :as p]
-            [clojure.pprint :as pprint])
+            [clojure.pprint :as pprint]
+            [langohr.channel   :as lch])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
 
@@ -96,8 +97,14 @@
    :body (transit-write {:ename "exchange1"
                          :topic "topic1"}))
 
+  (restart-dev)
 
-  (-> cr/system :api-server :service ::http/service-fn)
+
+;;  (-> cr/system :api-server :service :system/rabbit-mq :rabbit-mq-config :conn)
+
+  (lch/open (-> cr/system :api-server :rabbit-mq-config :rabbit-mq-config :conn))
+
+  (lch/open? (-> cr/system :api-server :rabbit-mq-config :rabbit-mq-config :conn))
 
 
   (-> (transit-write {:ch "channel"
