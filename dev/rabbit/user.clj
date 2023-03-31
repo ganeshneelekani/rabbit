@@ -80,22 +80,18 @@
    (-> cr/system :api-server :service ::http/service-fn)
    :post "/publish"
    :headers {"Content-Type" "application/transit+json"}
-    ;; a1995316-80ea-4a98-939d-7c6295e4bb46).
-   :body (transit-write {:ch "channel"
-                         :qname "true"
-                        ;;  :f (fn [_]
-                        ;;       identity)
-                         :auto-ack true}))
+   :body (transit-write {:ename "exchange1"
+                         :r-key "r-key1"
+                         :payload " My data"}))
 
   (clojure.pprint/pprint (-> cr/system))
 
   (pt/response-for
    (-> cr/system :api-server :service ::http/service-fn)
-   :post "/declare"
+   :post "/declare-exchange"
    :headers {"Content-Type" "application/transit+json"}
-    ;; a1995316-80ea-4a98-939d-7c6295e4bb46).
    :body (transit-write {:ename "exchange1"
-                         :topic "topic1"}))
+                         :etype "direct"}))
 
   (restart-dev)
 

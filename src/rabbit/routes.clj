@@ -15,18 +15,14 @@
 (defn not-found-handler [_]
   {:status 404
    :body "Page not found"})
-;;declare-queue
 
 (def producer-route
-  #{["/publish" :post inter/publisher-interceptor :route-name :publish]
-    ["/declare" :post inter/declare-queue-interceptor :route-name :declare-queue]})
+  #{["/publish" :post (http/web-interceptors inter/publisher-interceptor) :route-name :publish]
+    ["/declare-exchange" :post (http/web-interceptors inter/declare-exhange-interceptor) :route-name :declare-exchane]})
 
-;; (http/web-interceptors in.zter/consumer)
 (def consumer-route
   #{["/consume" :post (http/web-interceptors inter/consumer-interceptor) :route-name :consume]})
 
-(def no-routes
-  {:not-found {:handler not-found-handler}})
 
 (defn routes []
   (route/expand-routes

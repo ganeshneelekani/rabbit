@@ -6,14 +6,6 @@
             [ring.util.response :as rr]
             [rabbit.mqueue :as mqueue]))
 
-
-(defmacro interceptor-> [name handler]
-  {:name name
-   :enter `(fn [context#]
-             (let [request# (:request context#)
-                   response# (~handler request#)]
-               (assoc context# :response response#)))})
-
 (defn ws-params
   "Get the body parameters regardless of type"
   [{json-params :json-params
@@ -41,6 +33,7 @@
 (def publisher-interceptor
   {:name ::publisher-interceptor
    :enter (fn [{:keys [request] :as ctx}]
+            (clojure.pprint/pprint request)
             (let [conn (get-in request [:system/rabbit-mq :rabbit-mq-config :conn])
                   {:keys [ename r-key payload]} (:transit-params request)
                   ename' (or ename mqueue/DEFAULT-EXCHANGE-NAME)
@@ -54,19 +47,20 @@
                   (assoc ctx :response {:status 500
                                         :body (format "error in publishing message for the exhange name %s routing key %s", ename',r-key')})))))})
 
-(def declare-queue-interceptor
-  {:name ::declare-queue
+(def declare-exhange-interceptor
+  {:name ::declare-exchange
    :enter (fn [{:keys [request] :as ctx}]
             (let [conn (get-in request [:system/rabbit-mq :rabbit-mq-config :conn])
-                  {:keys [ename topic]} (:transit-params request)
+                  {:keys [ename etype]} (:transit-params request)
                   ename' (or ename mqueue/DEFAULT-EXCHANGE-NAME)
-                  topic' (or topic mqueue/DEFAULT-TOPIC)]
+                  etype' (or etype mqueue/DEFAULT-ETYPE)]
               (try
-                (mqueue/declare-queue conn ename' topic')
-                (assoc ctx :response (rr/created nil "Message queue is created"))
+                (mqueue/declare-exchange conn ename' etype')
+                (assoc ctx :response (rr/created "Message exchange is created"))
                 (catch Exception e
+                  (println "---2---" e)
                   (assoc ctx :response {:status 500
-                                        :body (format "error in creating queue for the exhange %s topic %s", topic',ename')})))))})
+                                        :body (format "error in creating queue for the exhange %s topic %s", etype',ename')})))))})
 
 
 

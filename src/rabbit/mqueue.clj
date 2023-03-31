@@ -22,6 +22,9 @@
 (def ^{:const true}
   DEFAULT-PAYLOAD "Sample payload")
 
+(def ^{:const true}
+  DEFAULT-ETYPE "direct")
+
 (defn message-handler [qname ch metadata ^bytes payload]
   {:qname qname
    :channel ch
@@ -44,14 +47,14 @@
     (.start (Thread. (fn []
                        (lc/subscribe ch qname (partial message-handler qname) {:auto-ack auto-ack}))))))
 
-(defn declare-queue
-  "Declare a queue"
-  [conn ename topic & {:keys [durable auto-delete exclusive]
+(defn declare-exchange
+  "Declare a exchange"
+  [conn ename etype & {:keys [durable auto-delete exclusive]
                        :or   {durable     false
                               auto-delete true
                               exclusive   false}}]
   (let [ch (lch/open conn)]
-    (le/declare ch ename topic
+    (le/declare ch ename etype
                 {:durable     durable
                  :auto-delete auto-delete
                  :exclusive   exclusive})
