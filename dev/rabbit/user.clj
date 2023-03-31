@@ -44,6 +44,13 @@
         reader (transit/reader in :json)]
     (transit/read reader)))
 
+(defn create-request [api body]
+  (pt/response-for
+   (-> cr/system :api-server :service ::http/service-fn)
+   :post api
+   :headers {"Content-Type" "application/transit+json"}
+   :body (transit-write body)))
+
 
 (comment
 
@@ -60,12 +67,7 @@
   (keys  (clojure.pprint/pprint (-> cr/system :api-server :service)))
 
 
-  (defn create-request [api body]
-    (pt/response-for
-     (-> cr/system :api-server :service ::http/service-fn)
-     :post api
-     :headers {"Content-Type" "application/transit+json"}
-     :body (transit-write body)))
+
 
 
   ;; ch qname f auto-ack
@@ -88,20 +90,18 @@
                          :r-key "r-key1"
                          :payload " My data"}))
 
-  (create-request "/declare-exchange" {:ename "exchange2"
+  (create-request "/declare-exchange" {:ename "weathr"
                                        :etype "direct"})
 
-  (create-request "/declare-queue" {:qname "queue4"})
+  (create-request "/declare-queue" {:qname "queue1"})
 
-  (create-request "/bind" {:qname "queue4"
-                           :ename "exchange1"})
+  (create-request "/bind" {:qname "queue1"
+                           :ename "weathr"})
 
-  (create-request "/publish" {:ename "exchange1"
-                              :r-key "r-key1"
+  (create-request "/publish" {:ename "weathr"
                               :payload " My data"})
 
-  (create-request "/consume" {:ch "channel"
-                              :qname "true"
+  (create-request "/consume" {:qname "queue1"
                               :auto-ack "true"})
 
 

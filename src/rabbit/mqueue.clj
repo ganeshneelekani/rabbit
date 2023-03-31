@@ -24,10 +24,9 @@
 (def ^{:const true}
   DEFAULT-ETYPE "direct")
 
-(defn message-handler [qname ch metadata ^bytes payload]
-  {:qname qname
-   :channel ch
-   :metadata metadata
+(defn message-handler [ch {:keys [routing-key] :as meta} ^bytes payload]
+  {;;:metadata meta
+   :routing-key routing-key
    :payload (String. payload)})
 
 (defn bind-channel
@@ -37,14 +36,12 @@
 
 (defn start-consumer
   "Starts a consumer in a separate thread"
-  [conn topic ename qname & {:keys [exclusive auto-delete auto-ack]
-                             :or   {exclusive     false
-                                    auto-delete true
-                                    auto-ack true}}]
+  [conn qname & {:keys [exclusive auto-delete auto-ack]
+                 :or   {exclusive     false
+                        auto-delete true
+                        auto-ack true}}]
   (let [ch (lch/open conn)]
-    (bind-channel ch qname ename topic)
-    (.start (Thread. (fn []
-                       (lc/subscribe ch qname (partial message-handler qname) {:auto-ack auto-ack}))))))
+    (lc/subscribe ch qname message-handler {:auto-ack auto-ack})))
 
 (defn declare-exchange
   "Declare a exchange"
@@ -89,6 +86,8 @@
                                :or   {content-type "text/plain"
                                       type   "type"}}]
   (let [ch (lch/open conn)]
-    (lb/publish ch ename r-key payload {:content-type content-type
-                                        :type type})
+    (lb/publish ch ename r-key payload {:content-type "text/plain"
+                                        :type "greetings.hi"
+                                        :correlation-id "123"
+                                        :message-id "345"})
     (lch/close ch)))

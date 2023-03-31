@@ -14,13 +14,12 @@
   {:name ::consumer-interceptor
    :enter (fn [{:keys [request] :as ctx}]
             (let [conn (get-in request [:system/rabbit-mq :rabbit-mq-config :conn])
-                  {:keys [topic qname ename]} (:transit-params request)
-                  ename' (or ename mqueue/DEFAULT-EXCHANGE-NAME)
+                  {:keys [topic qname]} (:transit-params request)
                   topic' (or topic mqueue/DEFAULT-TOPIC)
                   qname' (or qname mqueue/DEFAULT-QUEUE)]
               (try
-                (mqueue/start-consumer conn topic' ename' qname')
-                (assoc ctx :response (rr/response  "Message published"))
+                (mqueue/start-consumer conn qname' topic')
+                (assoc ctx :response (rr/response  "Message consumed"))
                 (catch Exception e
                   (assoc ctx :response (rr/status {:body (format "error in publishing message for the topic  %s qname %s", topic',qname')} 500))))))})
 
