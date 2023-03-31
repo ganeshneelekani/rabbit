@@ -1,10 +1,9 @@
 (ns rabbit.mqueue
-  (:require [langohr.core      :as rmq]
+  (:require [langohr.basic     :as lb]
             [langohr.channel   :as lch]
-            [langohr.exchange  :as le]
-            [langohr.queue     :as lq]
             [langohr.consumers :as lc]
-            [langohr.basic     :as lb]))
+            [langohr.exchange  :as le]
+            [langohr.queue     :as lq]))
 
 
 (def ^{:const true}
@@ -49,15 +48,39 @@
 
 (defn declare-exchange
   "Declare a exchange"
-  [conn ename etype & {:keys [durable auto-delete exclusive]
+  [conn ename etype & {:keys [durable auto-delete internal]
                        :or   {durable     false
                               auto-delete true
-                              exclusive   false}}]
+                              internal   false}}]
   (let [ch (lch/open conn)]
     (le/declare ch ename etype
                 {:durable     durable
                  :auto-delete auto-delete
-                 :exclusive   exclusive})
+                 :internal   internal})
+    (lch/close ch)))
+
+
+(defn declare-queue
+  "Declare a queue"
+  [conn qname & {:keys [durable auto-delete exclusive]
+                 :or   {durable     false
+                        auto-delete true
+                        exclusive   false}}]
+  (let [ch (lch/open conn)
+        q (-> (lq/declare ch qname
+                          {:durable     durable
+                           :auto-delete auto-delete
+                           :exclusive   exclusive})
+              :queue)]
+    (lch/close ch)
+    q))
+
+(defn bind
+  "Binds a queue to an exchange"
+  [conn q ename & {:keys [routing-key]
+                   :or   {routing-key DEFAULT-ROUTING-KEY}}]
+  (let [ch (lch/open conn)]
+    (lq/bind ch q ename {:routing-key routing-key})
     (lch/close ch)))
 
 (defn publish-message
@@ -66,8 +89,6 @@
                                :or   {content-type "text/plain"
                                       type   "type"}}]
   (let [ch (lch/open conn)]
-    (println "----ch------" ch)
-    (println "----1------" ename "  " r-key "   " payload)
     (lb/publish ch ename r-key payload {:content-type content-type
                                         :type type})
     (lch/close ch)))

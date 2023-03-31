@@ -1,10 +1,9 @@
 (ns rabbit.server
-  (:require
-   [com.stuartsierra.component :as component]
-   [rabbit.components.api-server :as api-server]
-   [rabbit.config :as c]
-   [clojure.tools.logging :as log]
-   [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as log]
+            [com.stuartsierra.component :as component]
+            [rabbit.components.api-server :as api-server]
+            [rabbit.config :as c]))
 
 (defn create-system
   [config]
@@ -60,7 +59,3 @@
                                            :handle-consume-ok-fn (fn [consumer-tag]
                                                                    (println "Consumer registered"))})]
     (lb/consume ch queue consumer)))
-
-
-
-

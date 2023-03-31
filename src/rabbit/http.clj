@@ -1,13 +1,13 @@
 (ns rabbit.http
-  (:require  [io.pedestal.http :as http]
-             [io.pedestal.http.content-negotiation :as conneg]
-             [io.pedestal.interceptor.error :as error-int]
-             [io.pedestal.http.cors :as cors]
-             [clojure.data.json :as json]
-             [io.pedestal.http.body-params :as bp]
-             [ring.util.codec :as ringutil]
-             [clojure.walk :refer [postwalk]]
-             [clojure.pprint :as pprint])
+  (:require [clojure.data.json :as json]
+            [clojure.pprint :as pprint]
+            [clojure.walk :refer [postwalk]]
+            [io.pedestal.http :as http]
+            [io.pedestal.http.body-params :as bp]
+            [io.pedestal.http.content-negotiation :as conneg]
+            [io.pedestal.http.cors :as cors]
+            [io.pedestal.interceptor.error :as error-int]
+            [ring.util.codec :as ringutil])
   (:import (java.util UUID)))
 
 (def http-error-handler

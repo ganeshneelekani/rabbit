@@ -1,16 +1,13 @@
 (ns rabbit.user
-  (:require [rabbit.config :as c]
-            [rabbit.server :as server]
-            [com.stuartsierra.component :as component]
-            [rabbit.routes :as r]
-            [io.pedestal.http :as http]
-            [com.stuartsierra.component.repl :as cr]
-            [io.pedestal.test :as pt]
+  (:require [clojure.pprint :as p]
             [cognitect.transit :as transit]
-            [clojure.pprint :as p]
-            [clojure.pprint :as pprint]
-            [langohr.channel   :as lch])
-  (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
+            [com.stuartsierra.component.repl :as cr]
+            [io.pedestal.http :as http]
+            [io.pedestal.test :as pt]
+            [langohr.channel   :as lch]
+            [rabbit.config :as c]
+            [rabbit.server :as server])
+  (:import (java.io ByteArrayInputStream ByteArrayOutputStream)))
 
 
 (defonce system-ref (atom nil))
@@ -62,6 +59,15 @@
 
   (keys  (clojure.pprint/pprint (-> cr/system :api-server :service)))
 
+
+  (defn create-request [api body]
+    (pt/response-for
+     (-> cr/system :api-server :service ::http/service-fn)
+     :post api
+     :headers {"Content-Type" "application/transit+json"}
+     :body (transit-write body)))
+
+
   ;; ch qname f auto-ack
   (pt/response-for
    (-> cr/system :api-server :service ::http/service-fn)
@@ -71,8 +77,6 @@
    :body (transit-write {:ch "channel"
                          :qname "true"
                          :auto-ack "true"}))
-
-
 
   (restart-dev)
 
@@ -84,16 +88,26 @@
                          :r-key "r-key1"
                          :payload " My data"}))
 
-  (clojure.pprint/pprint (-> cr/system))
+  (create-request "/declare-exchange" {:ename "exchange2"
+                                       :etype "direct"})
 
-  (pt/response-for
-   (-> cr/system :api-server :service ::http/service-fn)
-   :post "/declare-exchange"
-   :headers {"Content-Type" "application/transit+json"}
-   :body (transit-write {:ename "exchange1"
-                         :etype "direct"}))
+  (create-request "/declare-queue" {:qname "queue4"})
+
+  (create-request "/bind" {:qname "queue4"
+                           :ename "exchange1"})
+
+  (create-request "/publish" {:ename "exchange1"
+                              :r-key "r-key1"
+                              :payload " My data"})
+
+  (create-request "/consume" {:ch "channel"
+                              :qname "true"
+                              :auto-ack "true"})
+
+
 
   (restart-dev)
+
 
 
 ;;  (-> cr/system :api-server :service :system/rabbit-mq :rabbit-mq-config :conn)
